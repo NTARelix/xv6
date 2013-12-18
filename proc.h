@@ -50,6 +50,7 @@ struct context {
 };
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
+enum procloc {MEM, FSYS};
 
 // Per-process state
 struct proc {
@@ -66,7 +67,14 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+  enum procloc loc;            // Process in memory or on file system
 };
+
+void
+saveProcess(struct proc *p);
+
+void
+loadProcess(struct proc *p);
 
 // Process memory is laid out contiguously, low addresses first:
 //   text

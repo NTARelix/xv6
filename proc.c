@@ -47,6 +47,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->loc = MEM;
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -263,8 +264,15 @@ scheduler(void)
     // Enable interrupts on this processor.
     sti();
 
-    // Loop over process table looking for process to run.
     acquire(&ptable.lock);
+    // Loop over process table looking for processes to swap in/out of memory
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->loc == MEM && p->state != RUNNABLE && p->state != RUNNING)
+        saveProcess(p);
+      else if (p->loc == FSYS && (p->state == RUNNABLE || p->state == RUNNING))
+        loadProcess(p);
+    }
+    // Loop over process table looking for process to run.
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
@@ -434,9 +442,14 @@ procdump(void)
   [RUNNING]   "run   ",
   [ZOMBIE]    "zombie"
   };
+  static char *locs[] = {
+  [MEM]   "memory",
+  [FSYS]  "disk  "
+  };
   int i;
   struct proc *p;
   char *state;
+  char *loc;
   uint pc[10];
   
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
@@ -446,7 +459,11 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    cprintf("%d %s %s", p->pid, state, p->name);
+    if(p->loc >= 0 && p->loc < NELEM(locs) && locs[p->loc])
+      loc = locs[p->loc];
+    else
+      loc = "???";
+    cprintf("%d %s %s %s", p->pid, state, loc, p->name);
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)
@@ -454,6 +471,33 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+
+// Saves a process from memory to the file system and removes
+// it from memory, but keeps the process table entry.
+// Argument *p: Process to save
+// Preconditions: must have acquired ptable.lock
+// Postconditions: process memory freed and new file created
+void
+saveProcess(struct proc *p)
+{
+    p->loc = FSYS;
+    // read p's memory, writing everything directly to file
+    // free p's memory
+}
+
+// Loads process from file system into memory and removes
+// file.
+// Argument *p: Process to load
+// Preconditions: must have acquired ptable.lock
+// Postconditions: process memory allocated and file removed
+void
+loadProcess(struct proc *p)
+{
+    p->loc = MEM;
+    // allocate new process
+    // read p's file into p's newly allocated process
+    // remove p's file
 }
 
 
