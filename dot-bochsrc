@@ -107,7 +107,7 @@ romimage: file=$BXSHARE/BIOS-bochs-latest
 #  650Mhz Athlon K-7 with Linux 2.4.4/egcs-2.91.66  2 to  2.5 Mips
 #  400Mhz Pentium II with Linux 2.0.36/egcs-1.0.3   1 to  1.8 Mips
 #=======================================================================
-cpu: count=2, ips=10000000
+cpu: count=1, ips=10000000
 
 #=======================================================================
 # MEGS
@@ -115,10 +115,10 @@ cpu: count=2, ips=10000000
 # The default is 32MB, most OS's won't need more than that.
 # The maximum amount of memory supported is 2048Mb.
 #=======================================================================
-#megs: 256
+megs: 256
 #megs: 128
 #megs: 64
-megs: 32
+#megs: 32
 #megs: 16
 #megs: 8
 
@@ -183,7 +183,7 @@ vga: extension=none
 # such as a: or b: as the path.  The parameter 'image' works with image files
 # only. In that case the size must match one of the supported types.
 #=======================================================================
-floppya: 1_44=/dev/fd0, status=inserted
+#floppya: 1_44=/dev/fd0, status=inserted
 #floppya: image=../1.44, status=inserted
 #floppya: 1_44=/dev/fd0H1440, status=inserted
 #floppya: 1_2=../1_2, status=inserted
@@ -196,7 +196,7 @@ floppya: 1_44=/dev/fd0, status=inserted
 # See FLOPPYA above for syntax
 #=======================================================================
 #floppyb: 1_44=b:, status=inserted
-floppyb: 1_44=b.img, status=inserted
+#floppyb: 1_44=b.img, status=inserted
 
 #=======================================================================
 # ATA0, ATA1, ATA2, ATA3
@@ -494,7 +494,7 @@ parport1: enabled=1, file="/dev/stdout"
 # Examples:
 #   vga_update_interval: 250000
 #=======================================================================
-vga_update_interval: 300000
+#vga_update_interval: 300000
 
 # using for Winstone '98 tests
 #vga_update_interval:  100000
