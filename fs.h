@@ -53,3 +53,7 @@ struct dirent {
   char name[DIRSIZ];
 };
 
+// fileexecutable(char*) return types
+#define F_EXEC 0
+#define F_DEVICE 1
+#define F_OTHER 2

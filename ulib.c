@@ -3,6 +3,8 @@
 #include "fcntl.h"
 #include "user.h"
 #include "x86.h"
+#include "elf.h"
+#include "fs.h"
 
 char*
 strcpy(char *s, char *t)
@@ -102,4 +104,39 @@ memmove(void *vdst, void *vsrc, int n)
   while(n-- > 0)
     *dst++ = *src++;
   return vdst;
+}
+
+int
+fileexecutable(char *path)
+{
+  int fd;
+  struct elfhdr elf;
+  struct stat st;
+  
+  if((fd = open(path, 0)) < 0)
+    goto other;
+  
+  if(fstat(fd, &st) < 0)
+    goto other;
+  // Devices fail
+  if(st.type == T_DEV)
+    goto dev;
+  
+  // Check ELF header
+  if(read(fd, (char*)&elf, sizeof(elf)) < sizeof(elf))
+    goto other;
+  if(elf.magic != ELF_MAGIC)
+    goto other;
+  close(fd);
+  return F_EXEC;
+ 
+other:
+  if(fd)
+    close(fd);
+  return F_OTHER;
+
+dev:
+  if(fd)
+    close(fd);
+  return F_DEVICE;
 }
