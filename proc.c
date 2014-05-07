@@ -456,4 +456,40 @@ procdump(void)
   }
 }
 
-
+int
+clone(char* stack, int size)
+{
+  int i, pid;
+  struct proc *np;
+  
+  // Allocate process.
+  if((np = allocproc()) == 0)
+    return -1;
+  
+  // Copy process state from parent
+  np->pgdir = proc->pgdir;
+  np->sz = proc->sz;
+  np->parent = proc;
+  *np->tf = *proc->tf;
+  
+  // Child thread returns pid=0
+  np->tf->eax = 0;
+  
+  // Copy user stack
+  char* src = (char*) proc->tf->esp - size;
+  char* dst = stack;
+  for (i=0; i<size; i++)
+    *dst++ = *src++;
+  np->tf->esp = (uint)stack + PGSIZE;
+  
+  // Copy file descriptors
+  for(i = 0; i < NOFILE; i++)
+    if(proc->ofile[i])
+      np->ofile[i] = filedup(proc->ofile[i]);
+  np->cwd = idup(proc->cwd);
+ 
+  pid = np->pid;
+  np->state = RUNNABLE;
+  safestrcpy(np->name, proc->name, sizeof(proc->name));
+  return pid;
+}
